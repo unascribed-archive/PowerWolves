@@ -1,0 +1,16 @@
+[
+{
+  "modid": "powerwolves",
+  "name": "Power Wolves",
+  "description": "Power Wolves is a complete overhaul for the wolves, that makes an attempt to still feel Minecraft-y by avoiding stats systems.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "http://augment.gameminers.com/powerwolves.html",
+  "updateUrl": "",
+  "authorList": ["Aesen"],
+  "credits": "Wolf textures based off DJ Persnikity's Wolf Textures",
+  "logoFile": "assets/powerwolves/textures/misc/logo.png",
+  "screenshots": [],
+  "dependencies": []
+}
+]

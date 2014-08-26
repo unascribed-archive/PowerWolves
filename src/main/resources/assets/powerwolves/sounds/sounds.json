@@ -1,0 +1,8 @@
+{
+   "lowfiBark": {"category": "master","sounds": [{"name": "lowfi-bark","stream": false}]},
+   "lowfiDeath": {"category": "master","sounds": [{"name": "lowfi-death","stream": false}]},
+   "lowfiGrowl": {"category": "master","sounds": [{"name": "lowfi-growl","stream": false}]},
+   "lowfiHurt": {"category": "master","sounds": [{"name": "lowfi-hurt","stream": false}]},
+   "lowfiPanting": {"category": "master","sounds": [{"name": "lowfi-panting","stream": false}]},
+   "lowfiWhine": {"category": "master","sounds": [{"name": "lowfi-whine","stream": false}]}
+}
