@@ -23,13 +23,14 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraft.world.biome.BiomeGenBase;
 
 public class EntityPowerWolf extends EntityWolf {
 
 	public static final int ENTITY_ID = 0;
 	private WolfType type = WolfType.ARCTIC_WOLF;
-	
+
 	public EntityPowerWolf(World w) {
 		super(w);
 	}
@@ -39,7 +40,7 @@ public class EntityPowerWolf extends EntityWolf {
 			double z, float yaw, float pitch) {
 		super.setLocationAndAngles(x, y, z, yaw, pitch);
 	}
-	
+
 	@Override
 	protected void entityInit() {
 		super.entityInit();
@@ -47,74 +48,85 @@ public class EntityPowerWolf extends EntityWolf {
 		dataWatcher.addObject(25, new ItemStack(PowerWolvesMod.COLLAR));
 		dataWatcher.updateObject(25, null);
 	}
-	
+
 	protected String getLivingSound() {
-		if (getSpecialType() == SpecialWolfType.K9) {
-			if (isAngry()) {
-				return "powerwolves:lowfiGrowl";
-			}
-			else if (rand.nextInt(3) == 0) {
-				if (isTamed() && this.dataWatcher.getWatchableObjectFloat(18) < 10.0F) {
-					return "powerwolves:lowfiWhine";
-				} else {
-					return "powerwolves:lowfiPanting";
-				}
-			}
-			return "powerwolves:lowfiBark";
+		if (isAngry()) {
+			return getAngrySound();
 		}
-        return this.isAngry() ? "mob.wolf.growl" : (this.rand.nextInt(3) == 0 ? (this.isTamed() && this.dataWatcher.getWatchableObjectFloat(18) < 10.0F ? "mob.wolf.whine" : "mob.wolf.panting") : "mob.wolf.bark");
-    }
+		if (rand.nextInt(3) == 0) {
+			if (this.isTamed() && dataWatcher.getWatchableObjectFloat(18) < 10.0F) {
+				return getWhineSound();
+			} else {
+				return getPantingSound();
+			}
+		}
+		return getIdleSound();
+	}
 
-    protected String getHurtSound() {
-    	if (getSpecialType() == SpecialWolfType.K9) return "powerwolves:lowfiHurt";
-        return "mob.wolf.hurt";
-    }
+	protected String getAngrySound() {
+		return "mob.wolf.growl";
+	}
 
-    protected String getDeathSound() {
-    	if (getSpecialType() == SpecialWolfType.K9) return "powerwolves:lowfiDeath";
-        return "mob.wolf.death";
-    }
-	
+	protected String getWhineSound() {
+		return "mob.wolf.whine";
+	}
+
+	protected String getPantingSound() {
+		return "mob.wolf.panting";
+	}
+
+	protected String getIdleSound() {
+		return "mob.wolf.bark";
+	}
+
+	protected String getHurtSound() {
+		return "mob.wolf.hurt";
+	}
+
+	protected String getDeathSound() {
+		return "mob.wolf.death";
+	}
+
 	@Override
 	protected void updateAITick() {
 		super.updateAITick();
 	}
-	
+
 	@Override
 	public void onDeath(DamageSource source) {
 		super.onDeath(source);
-		if (!worldObj.isRemote && hasCollar()) {
+		if (!worldObj.isRemote && hasCollar() && hasCustomNameTag()) {
 			EntityLivingBase owner = getOwner();
 			if (owner instanceof EntityPlayer) {
 				((EntityPlayer)owner).addChatMessage(source.func_151519_b(this));
 			}
 		}
 	}
-	
+
 	public WolfType getType() {
 		if (dataWatcher.getWatchableObjectInt(24) != type.ordinal()) {
 			type = WolfType.values()[dataWatcher.getWatchableObjectInt(24)];
 		}
 		return type;
 	}
-	
+
 	public void setType(WolfType type) {
 		this.type = type;
 		this.dataWatcher.updateObject(24, type.ordinal());
 	}
-	
+
 	public ItemStack getCollar() {
 		return dataWatcher.getWatchableObjectItemStack(25);
 	}
-	
+
 	public void setCollar(ItemStack collar) {
 		dataWatcher.updateObject(25, collar);
 	}
-	
+
 	public boolean hasCollar() {
 		return getCollar() != null;
 	}
-	
+
 	@Override
 	public IEntityLivingData onSpawnWithEgg(IEntityLivingData data) {
 		List<WolfType> types = new ArrayList<WolfType>();
@@ -144,20 +156,20 @@ public class EntityPowerWolf extends EntityWolf {
 		System.out.println("Chose type "+getType().getFriendlyName());
 		return null;
 	}
-	
+
 	@Override
 	public boolean hasCustomNameTag() {
 		if (!isTamed()) return false;
 		ItemStack collar = getCollar();
 		return collar == null ? true : collar.hasDisplayName();
 	}
-	
+
 	@Override
 	public String getCustomNameTag() {
 		ItemStack collar = getCollar();
 		return collar == null ? "\u00A7cNo Collar" : collar.getDisplayName();
 	}
-	
+
 	@Override
 	public void setCustomNameTag(String name) {
 		if (name.equals("\u00A7cNo Collar")) return; // no.
@@ -168,14 +180,14 @@ public class EntityPowerWolf extends EntityWolf {
 			collar.setStackDisplayName(name);
 		}
 	}
-	
+
 	public SpecialWolfType getSpecialType() {
 		if (hasCustomNameTag()) {
 			if (getCustomNameTag().equals("K-9 Mark IV")) return SpecialWolfType.K9;
 		}
 		return null;
 	}
-	
+
 	@Override
 	public void readEntityFromNBT(NBTTagCompound tag) {
 		super.readEntityFromNBT(tag);
@@ -190,7 +202,7 @@ public class EntityPowerWolf extends EntityWolf {
 			setCollar(ItemStack.loadItemStackFromNBT(tag.getCompoundTag("CollarItem")));
 		}
 	}
-	
+
 	@Override
 	public void writeEntityToNBT(NBTTagCompound tag) {
 		super.writeEntityToNBT(tag);
@@ -203,23 +215,36 @@ public class EntityPowerWolf extends EntityWolf {
 		}
 		tag.removeTag("CustomName");
 	}
-	
+
 	@Override
 	public boolean interact(EntityPlayer p) {
 		ItemStack itemstack = p.inventory.getCurrentItem();
 		if (p.isSneaking()) {
-			if (!worldObj.isRemote && isTamed() && p == getOwner()) {
+			if (isTamed() && p == getOwner()) {
+
 				ItemStack collar = getCollar();
 				if (collar != null) {
-					setCollar(null);
-					entityDropItem(collar, height/2f);
+					if (!worldObj.isRemote) {
+						setCollar(null);
+						entityDropItem(collar, height/2f);
+					} else if (collar.hasDisplayName()) {
+						if (collar.getDisplayName().equals("K-9 Mark IV")) {
+							spawnTransmutationParticles();
+						}
+					}
 					return true;
 				} else {
 					if (itemstack != null && itemstack.getItem() == PowerWolvesMod.COLLAR) {
-						ItemStack copy = itemstack.copy();
-						copy.stackSize = 1;
-						setCollar(copy);
-						itemstack.stackSize--;
+						if (!worldObj.isRemote) {
+							ItemStack copy = itemstack.copy();
+							copy.stackSize = 1;
+							setCollar(copy);
+							itemstack.stackSize--;
+						} else if (itemstack.hasDisplayName()) {
+							if (itemstack.getDisplayName().equals("K-9 Mark IV")) {
+								spawnTransmutationParticles();
+							}
+						}
 						return true;
 					}
 				}
@@ -233,21 +258,30 @@ public class EntityPowerWolf extends EntityWolf {
 			return super.interact(p);
 		}
 	}
-	
+
+	public void spawnTransmutationParticles() {
+		for (int i = 0; i < 100; ++i) {
+			double d2 = this.rand.nextGaussian() * 0.02D;
+			double d0 = this.rand.nextGaussian() * 0.02D;
+			double d1 = this.rand.nextGaussian() * 0.02D;
+			this.worldObj.spawnParticle("witchMagic", this.posX + (double)(this.rand.nextFloat() * this.width * 2.0F) - (double)this.width, this.posY + (double)(this.rand.nextFloat() * this.height), this.posZ + (double)(this.rand.nextFloat() * this.width * 2.0F) - (double)this.width, d2, d0, d1);
+		}
+	}
+
 	@Override
 	public EntityPowerWolf createChild(EntityAgeable m8) {
 		EntityPowerWolf mate = (EntityPowerWolf)m8;
 		EntityPowerWolf child = new EntityPowerWolf(worldObj);
 		String owner = func_152113_b();
-        if (owner != null && owner.trim().length() > 0) {
-            child.func_152115_b(owner);
-            child.setTamed(true);
-        }
-        if (getRNG().nextBoolean()) {
-        	child.setType(getType());
-        } else {
-        	child.setType(mate.getType());
-        }
+		if (owner != null && owner.trim().length() > 0) {
+			child.func_152115_b(owner);
+			child.setTamed(true);
+		}
+		if (getRNG().nextBoolean()) {
+			child.setType(getType());
+		} else {
+			child.setType(mate.getType());
+		}
 		return child;
 	}
 }

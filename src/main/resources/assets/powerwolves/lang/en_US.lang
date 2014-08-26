@@ -3,6 +3,7 @@ language.region=US
 language.code=en_US
 
 item.collar.name=Collar
+item.transmutator.name=Transmutator
 
 entity.powerwolves.wolf.name=Power Wolf
 

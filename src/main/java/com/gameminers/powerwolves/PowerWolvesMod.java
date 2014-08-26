@@ -9,6 +9,7 @@ import com.gameminers.powerwolves.entity.render.ModelPowerWolf;
 import com.gameminers.powerwolves.entity.render.RenderPowerWolf;
 import com.gameminers.powerwolves.enums.WolfType;
 import com.gameminers.powerwolves.item.ItemCollar;
+import com.gameminers.powerwolves.item.ItemTransmutator;
 import com.google.common.collect.Maps;
 import com.google.common.eventbus.Subscribe;
 
@@ -43,6 +44,7 @@ public class PowerWolvesMod {
 	public static final String DOGECOIN_DONATION_ADDRESS = "D8dNpUyW2UwXGTxSr7VSPKo34BeBKnHjoY";
 	public static final Map<WolfType, ResourceLocation> wolfResources = Maps.newHashMap();
 	public static Item COLLAR = new ItemCollar();
+	public static Item TRANSMUTATOR = new ItemTransmutator();
 	
 	@EventHandler
 	public void onInit(FMLInitializationEvent e) {
@@ -72,6 +74,7 @@ public class PowerWolvesMod {
 			wolfResources.put(w, new ResourceLocation(split[0], split[1]));
 		}
 		GameRegistry.registerItem(COLLAR, "collar", "powerwolves");
+		GameRegistry.registerItem(TRANSMUTATOR, "transmutator", "powerwolves");
 		FMLCommonHandler.instance().bus().register(this);
 		GameRegistry.addRecipe(new ShapedOreRecipe(COLLAR, 
 				"SSS",

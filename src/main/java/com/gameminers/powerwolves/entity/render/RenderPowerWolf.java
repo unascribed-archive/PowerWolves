@@ -101,14 +101,14 @@ public class RenderPowerWolf extends RenderWolf {
 	
 	@Override
 	protected int shouldRenderPass(EntityLivingBase ent, int pass, float partialTicks) {
-		EntityPowerWolf doge = (EntityPowerWolf)ent;
-        if (pass == 0 && doge.getWolfShaking()) {
-            float brightness = doge.getBrightness(partialTicks) * doge.getShadingWhileShaking(partialTicks);
+		EntityPowerWolf wolf = (EntityPowerWolf)ent;
+        if (pass == 0 && wolf.getWolfShaking()) {
+            float brightness = wolf.getBrightness(partialTicks) * wolf.getShadingWhileShaking(partialTicks);
             bindTexture(getEntityTexture(ent));
             GL11.glColor3f(brightness, brightness, brightness);
             return 1;
-        } else if (pass == 1 && doge.isTamed()) {
-        	ItemStack collar = doge.getCollar();
+        } else if (pass == 1 && wolf.isTamed()) {
+        	ItemStack collar = wolf.getCollar();
         	if (collar == null) return -1;
         	int color;
         	NBTTagCompound nbt = collar.getTagCompound();
@@ -123,7 +123,7 @@ public class RenderPowerWolf extends RenderWolf {
             bindTexture(wolfCollarTextures);
             float s = 1.001f;
             GL11.glScalef(s, s, s);
-            GL11.glColor3f(red, green, blue);
+            GL11.glColor3f(red/255f, green/255f, blue/255f);
             return collar.hasEffect(0) ? 15 : 1;
         } else if (pass == 2) {
         	return 0;
