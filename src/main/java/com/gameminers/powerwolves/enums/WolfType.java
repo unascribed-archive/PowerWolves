@@ -6,23 +6,27 @@ import java.util.List;
 import gminers.kitchensink.Strings;
 import net.minecraft.client.renderer.entity.RenderMooshroom;
 import net.minecraft.world.biome.BiomeGenBase;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.experimental.FieldDefaults;
 import static net.minecraft.world.biome.BiomeGenBase.*;
 
 @Getter
+@FieldDefaults(level=AccessLevel.PRIVATE,makeFinal=true)
 public enum WolfType {
 	ARCTIC_WOLF			("minecraft:textures/entity/wolf/wolf.png"			/* arctic wolf spawn areas are implied at runtime */),
 	GOLDEN_RETRIEVER	("powerwolves:textures/entity/golden_retriever.png",plains, savanna, savannaPlateau, extremeHills, extremeHillsPlus),
 	ALASKAN_HUSKY		("powerwolves:textures/entity/alaskan_husky.png",	icePlains, taiga, taigaHills),
-	CHOCOLATE_LABRADOR	("powerwolves:textures/entity/chocolate_lab.png",	forest, forestHills, roofedForest, birchForest, birchForestHills),
+	CHOCOLATE_LAB		("powerwolves:textures/entity/chocolate_lab.png",	forest, forestHills, roofedForest, birchForest, birchForestHills),
 	GERMAN_SHEPHERD		("powerwolves:textures/entity/german_shepherd.png",	forest, forestHills, birchForest, birchForestHills),
 	SHIBA_INU			("powerwolves:textures/entity/shiba.png",			plains, savanna, savannaPlateau, forest),
 	RED_MUSHROLF		("powerwolves:textures/entity/red_mushrolf.png",	mushroomIsland, mushroomIslandShore),
 	BROWN_MUSHROLF		("powerwolves:textures/entity/brown_mushrolf.png",	mushroomIsland, mushroomIslandShore),
 	;
-	private final String texture;
-	private final BiomeGenBase[] biomes;
+	String texture;
+	BiomeGenBase[] biomes;
+	
 	private WolfType(String texture, BiomeGenBase... biomes) {
 		this.texture = texture;
 		this.biomes = biomes;

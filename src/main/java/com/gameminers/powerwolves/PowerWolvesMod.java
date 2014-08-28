@@ -10,6 +10,7 @@ import com.gameminers.powerwolves.entity.render.RenderPowerWolf;
 import com.gameminers.powerwolves.enums.WolfType;
 import com.gameminers.powerwolves.item.ItemCollar;
 import com.gameminers.powerwolves.item.ItemTransmutator;
+import com.gameminers.powerwolves.proxy.CommonProxy;
 import com.google.common.collect.Maps;
 import com.google.common.eventbus.Subscribe;
 
@@ -33,9 +34,13 @@ import net.minecraftforge.oredict.ShapedOreRecipe;
 import cpw.mods.fml.client.registry.RenderingRegistry;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
+import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.Mod.EventHandler;
+import cpw.mods.fml.common.Mod.Instance;
+import cpw.mods.fml.common.Mod.InstanceFactory;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.registry.EntityRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
 
@@ -45,16 +50,19 @@ public class PowerWolvesMod {
 	public static final Map<WolfType, ResourceLocation> wolfResources = Maps.newHashMap();
 	public static Item COLLAR = new ItemCollar();
 	public static Item TRANSMUTATOR = new ItemTransmutator();
+	@Instance("powerwolves")
+	public static PowerWolvesMod inst;
+	@SidedProxy(clientSide="com.gameminers.powerwolves.proxy.ClientProxy", serverSide="com.gameminers.powerwolves.proxy.ServerProxy")
+	public static CommonProxy proxy;
 	
 	@EventHandler
 	public void onInit(FMLInitializationEvent e) {
-		RenderingRegistry.registerEntityRenderingHandler(EntityPowerWolf.class, new RenderPowerWolf(new ModelPowerWolf(), new ModelPowerWolf(), 0.5F));
 		WolfType.printSpawnConditions();
 		EntityRegistry.registerModEntity(EntityPowerWolf.class, "wolf", EntityPowerWolf.ENTITY_ID, this, 96, 1, true);
-		try {
+		/*try {
 			Class.forName("com.thoughtcomplex.horizon.entities.CustomSpawnEgg");
 			com.thoughtcomplex.horizon.entities.CustomSpawnEgg.registerCustomEgg("powerwolves","wolf", EntityPowerWolf.ENTITY_ID, new Color(0xD2C59B), new Color(0xC29240));
-		} catch (Throwable t) {}
+		} catch (Throwable t) {}*/
 		for (BiomeGenBase bgp : BiomeGenBase.getBiomeGenArray()) {
 			if (bgp == null) continue;
 			List<SpawnListEntry> epy = bgp.getSpawnableList(EnumCreatureType.creature);
@@ -82,6 +90,9 @@ public class PowerWolvesMod {
 				'S', Items.string,
 				'G', "nuggetGold"
 				));
+		NetworkRegistry.INSTANCE.registerGuiHandler(this, new PowerWolvesGuiHandler());
 		MinecraftForge.EVENT_BUS.register(this);
+		CraftingManager.getInstance().getRecipeList().add(new RecipesCollarDyes());
+		proxy.registerStuff();
 	}
 }

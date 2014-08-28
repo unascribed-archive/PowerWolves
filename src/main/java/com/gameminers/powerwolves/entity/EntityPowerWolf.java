@@ -8,20 +8,33 @@ import java.util.List;
 import com.gameminers.powerwolves.PowerWolvesMod;
 import com.gameminers.powerwolves.enums.SpecialWolfType;
 import com.gameminers.powerwolves.enums.WolfType;
+import com.gameminers.powerwolves.gui.GuiWolfInventory;
+import com.gameminers.powerwolves.inventory.ContainerWolf;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.client.gui.inventory.GuiScreenHorseInventory;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.EntityAgeable;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.IEntityLivingData;
+import net.minecraft.entity.monster.EntityEnderman;
 import net.minecraft.entity.passive.EntityChicken;
+import net.minecraft.entity.passive.EntityHorse;
 import net.minecraft.entity.passive.EntityWolf;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Items;
+import net.minecraft.inventory.AnimalChest;
+import net.minecraft.inventory.ContainerHorseInventory;
 import net.minecraft.item.ItemNameTag;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.play.server.S2DPacketOpenWindow;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.biome.BiomeGenBase;
@@ -30,7 +43,8 @@ public class EntityPowerWolf extends EntityWolf {
 
 	public static final int ENTITY_ID = 0;
 	private WolfType type = WolfType.ARCTIC_WOLF;
-
+	public AnimalChest inventory = new AnimalChest("PowerWolfInventory", 3);
+	
 	public EntityPowerWolf(World w) {
 		super(w);
 	}
@@ -64,10 +78,14 @@ public class EntityPowerWolf extends EntityWolf {
 	}
 
 	protected String getAngrySound() {
+		SpecialWolfType special = getSpecialType();
+		if (special == SpecialWolfType.SHIZUNE) return null;
 		return "mob.wolf.growl";
 	}
 
 	protected String getWhineSound() {
+		SpecialWolfType special = getSpecialType();
+		if (special == SpecialWolfType.SHIZUNE) return null;
 		return "mob.wolf.whine";
 	}
 
@@ -76,15 +94,33 @@ public class EntityPowerWolf extends EntityWolf {
 	}
 
 	protected String getIdleSound() {
+		SpecialWolfType special = getSpecialType();
+		if (special == SpecialWolfType.SHIZUNE) return null;
 		return "mob.wolf.bark";
 	}
 
+	@Override
 	protected String getHurtSound() {
+		SpecialWolfType special = getSpecialType();
+		if (special == SpecialWolfType.SHIZUNE) return "game.neutral.hurt";
 		return "mob.wolf.hurt";
 	}
 
+	@Override
 	protected String getDeathSound() {
+		SpecialWolfType special = getSpecialType();
+		if (special == SpecialWolfType.SHIZUNE) return "game.neutral.die";
 		return "mob.wolf.death";
+	}
+	
+	@Override
+	protected String getSplashSound() {
+		return "game.neutral.swim.splash";
+	}
+	
+	@Override
+	protected String getSwimSound() {
+		return "game.neutral.swim";
 	}
 
 	@Override
@@ -121,12 +157,13 @@ public class EntityPowerWolf extends EntityWolf {
 
 	public void setCollar(ItemStack collar) {
 		dataWatcher.updateObject(25, collar);
+		inventory.setInventorySlotContents(0, collar);
 	}
 
 	public boolean hasCollar() {
 		return getCollar() != null;
 	}
-
+	
 	@Override
 	public IEntityLivingData onSpawnWithEgg(IEntityLivingData data) {
 		List<WolfType> types = new ArrayList<WolfType>();
@@ -161,18 +198,17 @@ public class EntityPowerWolf extends EntityWolf {
 	public boolean hasCustomNameTag() {
 		if (!isTamed()) return false;
 		ItemStack collar = getCollar();
-		return collar == null ? true : collar.hasDisplayName();
+		return collar == null ? false : collar.hasDisplayName();
 	}
 
 	@Override
 	public String getCustomNameTag() {
 		ItemStack collar = getCollar();
-		return collar == null ? "\u00A7cNo Collar" : collar.getDisplayName();
+		return collar == null ? "" : collar.getDisplayName();
 	}
 
 	@Override
 	public void setCustomNameTag(String name) {
-		if (name.equals("\u00A7cNo Collar")) return; // no.
 		ItemStack collar = getCollar();
 		if (collar == null) {
 			// you're out of luck, buddy
@@ -181,9 +217,19 @@ public class EntityPowerWolf extends EntityWolf {
 		}
 	}
 
+	@Override
+	public void onLivingUpdate() {
+		super.onLivingUpdate();
+		
+	}
+	
 	public SpecialWolfType getSpecialType() {
 		if (hasCustomNameTag()) {
-			if (getCustomNameTag().equals("K-9 Mark IV")) return SpecialWolfType.K9;
+			WolfType type = getType();
+			for (SpecialWolfType swt : SpecialWolfType.values()) {
+				if (!swt.getApplicableBreeds().contains(type)) continue;
+				if (getCustomNameTag().equals(swt.getRequiredNameTag())) return swt;
+			}
 		}
 		return null;
 	}
@@ -216,38 +262,30 @@ public class EntityPowerWolf extends EntityWolf {
 		tag.removeTag("CustomName");
 	}
 
+	public void openGUI(EntityPlayer player) {
+        if (!this.worldObj.isRemote) {
+        	if (isTamed() && getOwner() == player) {
+        		player.openGui(PowerWolvesMod.inst, getEntityId(), worldObj, (int)posX, (int)posY, (int)posZ);
+        	} else {
+        		playSoundSafely(getAngrySound(), getSoundVolume(), getSoundPitch());
+        	}
+        }
+    }
+	
+	private void playSoundSafely(String sound, float volume, float pitch) {
+		if (sound != null) playSound(sound, volume, pitch);
+	}
+
+	public String getCommandSenderName() {
+        return hasCustomNameTag() ? this.getCustomNameTag() : I18n.format("entity.powerwolves.wolf.name");
+    }
+	
 	@Override
 	public boolean interact(EntityPlayer p) {
 		ItemStack itemstack = p.inventory.getCurrentItem();
 		if (p.isSneaking()) {
 			if (isTamed() && p == getOwner()) {
-
-				ItemStack collar = getCollar();
-				if (collar != null) {
-					if (!worldObj.isRemote) {
-						setCollar(null);
-						entityDropItem(collar, height/2f);
-					} else if (collar.hasDisplayName()) {
-						if (collar.getDisplayName().equals("K-9 Mark IV")) {
-							spawnTransmutationParticles();
-						}
-					}
-					return true;
-				} else {
-					if (itemstack != null && itemstack.getItem() == PowerWolvesMod.COLLAR) {
-						if (!worldObj.isRemote) {
-							ItemStack copy = itemstack.copy();
-							copy.stackSize = 1;
-							setCollar(copy);
-							itemstack.stackSize--;
-						} else if (itemstack.hasDisplayName()) {
-							if (itemstack.getDisplayName().equals("K-9 Mark IV")) {
-								spawnTransmutationParticles();
-							}
-						}
-						return true;
-					}
-				}
+				openGUI(p);
 			}
 			return itemstack != null && itemstack.getItem() == Items.name_tag;
 		}
