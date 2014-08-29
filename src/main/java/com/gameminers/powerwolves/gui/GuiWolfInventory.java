@@ -2,11 +2,13 @@ package com.gameminers.powerwolves.gui;
 
 import java.util.List;
 
+import gminers.glasspane.component.PaneImage;
 import gminers.kitchensink.Rendering;
 import gminers.kitchensink.Strings;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.client.resources.I18n;
@@ -15,6 +17,7 @@ import net.minecraft.inventory.ContainerHorseInventory;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.util.ResourceLocation;
 
+import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
 import com.gameminers.powerwolves.entity.EntityPowerWolf;
@@ -85,20 +88,47 @@ public class GuiWolfInventory extends GuiContainer
         }
     }
 
+    private int zoom = 28;
+    
 	protected void drawGuiContainerBackgroundLayer(float unused, int unused2, int unused3) {
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         this.mc.getTextureManager().bindTexture(wolfGuiTextures);
         int k = (this.width - this.xSize) / 2;
         int l = (this.height - this.ySize) / 2;
         this.drawTexturedModalRect(k, l, 0, 0, this.xSize, this.ySize);
-
-        //this.drawTexturedModalRect(k + 79, l + 17, 0, this.ySize, 90, 54);
-
-        this.drawTexturedModalRect(k + 7, l + 35, 0, this.ySize + 54, 18, 18);
-
-        GuiInventory.func_147046_a(k + 51, l + 60, 28, (float)(k + 51) - this.mouseX, (float)(l + 75 - 50) - this.mouseY, this.wolf);
+        GL11.glPushMatrix();
+        int x = k+26;
+        int y = l+70;
+        int boxWidth = 52;
+        int boxHeight = 52;
+        ScaledResolution res = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
+        int scaleFactor = res.getScaleFactor();
+        GL11.glScissor(x*scaleFactor, (height-y)*scaleFactor, boxWidth*scaleFactor, boxHeight*scaleFactor);
+        GL11.glEnable(GL11.GL_SCISSOR_TEST);
+        GL11.glTranslatef(0, -14+(zoom/2), 0);
+        GuiInventory.func_147046_a(k + 51, l + 60, zoom, (float)(k + 51) - this.mouseX, (float)(l + 75 - 50) - this.mouseY, this.wolf);
+        GL11.glDisable(GL11.GL_SCISSOR_TEST);
+        GL11.glPopMatrix();
+        GL11.glPushMatrix();
+        GL11.glTranslatef(0, 0, 400);
+        String s = "Zoom: \u00A7e"+((zoom-28)+100)+"%";
+        GL11.glScalef(0.5f, 0.5f, 1f);
+        fontRendererObj.drawStringWithShadow(s, ((x+boxWidth)*2)-(fontRendererObj.getStringWidth(s)+2), (y*2)-10, 0xFFFFFF);
+        GL11.glPopMatrix();
     }
 
+	@Override
+	public void updateScreen() {
+		super.updateScreen();
+		int wheel = Mouse.getDWheel();
+		zoom += wheel/60;
+        if (zoom < 28) {
+        	zoom = 28;
+        } else if (zoom > 128) {
+        	zoom = 128;
+        }
+	}
+	
     public void drawScreen(int mouseX, int p_73863_2_, float p_73863_3_) {
         this.mouseX = (float)mouseX;
         this.mouseY = (float)p_73863_2_;

@@ -7,4 +7,11 @@ item.transmutator.name=Transmutator
 
 entity.powerwolves.wolf.name=Power Wolf
 
-spawn.powerwolves.wolf.name=Spawn Power Wolf
+spawn.powerwolves.wolf.arctic_wolf.name=Spawn Arctic Wolf
+spawn.powerwolves.wolf.golden_retriever.name=Spawn Golden Retriever
+spawn.powerwolves.wolf.alaskan_husky.name=Spawn Alaskan Husky
+spawn.powerwolves.wolf.chocolate_lab.name=Spawn Chocolate Lab
+spawn.powerwolves.wolf.german_shepherd.name=Spawn German Shepherd
+spawn.powerwolves.wolf.shiba_inu.name=Spawn Shiba Inu
+spawn.powerwolves.wolf.red_mushrolf.name=Spawn Red Mushrolf
+spawn.powerwolves.wolf.brown_mushrolf.name=Spawn Brown Mushrolf

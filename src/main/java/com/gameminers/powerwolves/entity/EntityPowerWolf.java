@@ -171,18 +171,17 @@ public class EntityPowerWolf extends EntityWolf {
 		int y = (int)posY;
 		int z = (int)posZ;
 		BiomeGenBase biome = worldObj.getBiomeGenForCoords(x, z);
-		System.out.println("Spawning wolf in biome "+biome.biomeName);
+		System.out.println("Spawning wolf in biome "+biome.biomeName+" at "+x+", "+y+", "+z);
 		wolves: for (WolfType w : WolfType.values()) {
-			if (w.getBiomes().length == 0) {
-				types.add(w);
-				continue;
-			}
 			for (BiomeGenBase b : w.getBiomes()) {
 				if (b == biome) {
 					types.add(w);
 					continue wolves;
 				}
 			}
+		}
+		if (types.isEmpty()) {
+			types.add(WolfType.ARCTIC_WOLF);
 		}
 		String[] names = new String[types.size()];
 		for (int i = 0; i < names.length; i++) {
@@ -237,6 +236,7 @@ public class EntityPowerWolf extends EntityWolf {
 	@Override
 	public void readEntityFromNBT(NBTTagCompound tag) {
 		super.readEntityFromNBT(tag);
+		System.out.println("Reading wolf NBT");
 		if (tag.hasKey("WolfType", 8)) {
 			setType(WolfType.valueOf(tag.getString("WolfType").toUpperCase().replace(" ", "_")));
 		} else if (tag.hasKey("WolfType", 1)) { 

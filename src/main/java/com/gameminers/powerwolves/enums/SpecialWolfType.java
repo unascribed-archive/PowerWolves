@@ -19,7 +19,9 @@ import static com.gameminers.powerwolves.enums.WolfType.*;
 public enum SpecialWolfType {
 	K9("K-9 Mark IV", "Robotic"),
 	SHIZUNE("Shizune", "Silent"),
-	MIKAN("Mikan", "Humanoid");
+	MIKAN("Mikan", "Humanoid"),
+	BLANK("[          ]", "Split")
+	;
 	String requiredNameTag;
 	Set<WolfType> applicableBreeds;
 	String description;
