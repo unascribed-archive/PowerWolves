@@ -38,6 +38,10 @@ public class ItemCollar extends Item {
 		return 0xFFFFFF;
 	}
 	@Override
+	public int getItemStackLimit(ItemStack stack) {
+		return 1;
+	}
+	@Override
 	public IIcon getIcon(ItemStack stack, int pass) {
 		return pass == 0 ? collarBase : collarStud;
 	}

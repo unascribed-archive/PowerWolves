@@ -1,14 +1,19 @@
 package com.gameminers.powerwolves;
 
 import java.awt.Color;
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 
+import com.gameminers.powerwolves.enchantment.EnchantmentWolfDamage;
+import com.gameminers.powerwolves.enchantment.EnchantmentWolfKnockback;
+import com.gameminers.powerwolves.enchantment.EnchantmentWolfPoison;
 import com.gameminers.powerwolves.entity.EntityPowerWolf;
 import com.gameminers.powerwolves.entity.render.ModelPowerWolf;
 import com.gameminers.powerwolves.entity.render.RenderPowerWolf;
 import com.gameminers.powerwolves.enums.WolfType;
 import com.gameminers.powerwolves.item.ItemCollar;
+import com.gameminers.powerwolves.item.ItemFangs;
 import com.gameminers.powerwolves.item.ItemTransmutator;
 import com.gameminers.powerwolves.proxy.CommonProxy;
 import com.google.common.collect.Maps;
@@ -17,6 +22,9 @@ import com.google.common.eventbus.Subscribe;
 import net.minecraft.block.Block;
 import net.minecraft.client.audio.SoundRegistry;
 import net.minecraft.client.model.ModelWolf;
+import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.passive.EntityWolf;
@@ -24,12 +32,14 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.projectile.EntityEgg;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.biome.BiomeGenBase.SpawnListEntry;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.oredict.ShapedOreRecipe;
@@ -46,16 +56,26 @@ import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.registry.EntityRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
 
-@Mod(modid="powerwolves", name="Power Wolves", version="0.2", dependencies="required-after:KitchenSink;after:hmt")
+@Mod(modid="powerwolves", name="Power Wolves", version="0.3", dependencies="required-after:KitchenSink;after:hmt")
 public class PowerWolvesMod {
 	public static final String DOGECOIN_DONATION_ADDRESS = "D8dNpUyW2UwXGTxSr7VSPKo34BeBKnHjoY";
 	public static final Map<WolfType, ResourceLocation> wolfResources = Maps.newHashMap();
-	public static Item COLLAR = new ItemCollar();
-	public static Item TRANSMUTATOR = new ItemTransmutator();
+	
 	@Instance("powerwolves")
 	public static PowerWolvesMod inst;
 	@SidedProxy(clientSide="com.gameminers.powerwolves.proxy.ClientProxy", serverSide="com.gameminers.powerwolves.proxy.ServerProxy")
 	public static CommonProxy proxy;
+
+	public static ItemCollar COLLAR = new ItemCollar();
+	public static ItemFangs FANGS = new ItemFangs();
+	public static ItemTransmutator TRANSMUTATOR = new ItemTransmutator();
+	public static Item IRON_NUGGET;
+	
+	public static EnchantmentWolfDamage VICIOUS;
+	public static EnchantmentWolfKnockback FORCEFUL;
+	public static EnchantmentWolfPoison VENOMOUS;
+	
+	private static Configuration config = new Configuration(new File("config/powerwolves.cfg"));
 	
 	@EventHandler
 	public void onInit(FMLInitializationEvent e) {
@@ -88,7 +108,19 @@ public class PowerWolvesMod {
 			wolfResources.put(w, new ResourceLocation(split[0], split[1]));
 		}
 		GameRegistry.registerItem(COLLAR, "collar", "powerwolves");
+		GameRegistry.registerItem(FANGS, "fangs", "powerwolves");
 		GameRegistry.registerItem(TRANSMUTATOR, "transmutator", "powerwolves");
+		if (OreDictionary.getOres("nuggetIron").isEmpty()) {
+			IRON_NUGGET = new Item().setUnlocalizedName("ironNugget").setCreativeTab(CreativeTabs.tabMaterials).setTextureName("powerwolves:iron_nugget");
+			GameRegistry.registerItem(IRON_NUGGET, "iron_nugget", "powerwolves");
+			OreDictionary.registerOre("nuggetIron", IRON_NUGGET);
+			GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(IRON_NUGGET, 9), 
+					"I",
+					'I', "ingotIron"
+					));
+		} else {
+			IRON_NUGGET = OreDictionary.getOres("nuggetIron").get(0).getItem();
+		}
 		FMLCommonHandler.instance().bus().register(this);
 		GameRegistry.addRecipe(new ShapedOreRecipe(COLLAR, 
 				"SSS",
@@ -96,12 +128,38 @@ public class PowerWolvesMod {
 				'S', Items.string,
 				'G', "nuggetGold"
 				));
+		GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(FANGS, 1, 1), 
+				"III",
+				"NNN",
+				'I', "ingotIron",
+				'N', "nuggetIron"
+				));
+		GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(FANGS, 1, 2), 
+				" F ",
+				"D D",
+				'F', new ItemStack(FANGS, 1, 0),
+				'D', "gemDiamond"
+				));
 		NetworkRegistry.INSTANCE.registerGuiHandler(this, new PowerWolvesGuiHandler());
 		MinecraftForge.EVENT_BUS.register(this);
 		CraftingManager.getInstance().getRecipeList().add(new RecipesCollarDyes());
+		VICIOUS = registerEnchant(new EnchantmentWolfDamage(getEnchantId("vicious"), 10, 0));
+		FORCEFUL = registerEnchant(new EnchantmentWolfKnockback(getEnchantId("forceful"), 5));
+		VENOMOUS = registerEnchant(new EnchantmentWolfPoison(getEnchantId("venomous"), 3));
+		config.save();
 		proxy.registerStuff();
 	}
 	
+	private int enchantId = 150;
+	
+	private int getEnchantId(String string) {
+		return config.getInt(string, "enchantmentIds", enchantId++, 0, 256, "");
+	}
+
+	private <T extends Enchantment> T registerEnchant(T ench) {
+		return ench;
+	}
+
 	@SubscribeEvent
 	public void onEntitySpawn(EntityJoinWorldEvent e) {
 		if (e.entity.getClass() == EntityWolf.class) {
@@ -119,3 +177,4 @@ public class PowerWolvesMod {
 		}
 	}
 }
+

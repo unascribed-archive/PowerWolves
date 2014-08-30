@@ -35,17 +35,23 @@ public class ContainerWolf extends Container
         	public void onSlotChanged() {
         		wolf.setCollar(getStack());
         	}
+        	@Override
+        	public int getSlotStackLimit() {
+        		return 1;
+        	}
         });
         addSlotToContainer(new Slot(topInventory, 1, 8, 36) {
         	public boolean isItemValid(ItemStack stack) {
-                return isChestplate(stack) && !this.getHasStack();
+                return stack.getItem() == PowerWolvesMod.FANGS;
             }
-			private boolean isChestplate(ItemStack stack) {
-				if (stack.getItem() instanceof ItemArmor) {
-					return ((ItemArmor)stack.getItem()).armorType == 1;
-				}
-				return false;
-			}
+        	@Override
+        	public void onSlotChanged() {
+        		wolf.setFangs(getStack());
+        	}
+        	@Override
+        	public int getSlotStackLimit() {
+        		return 1;
+        	}
         });
         addSlotToContainer(new Slot(topInventory, 2, 8, 54) {
         	public boolean isItemValid(ItemStack stack) {
@@ -57,6 +63,10 @@ public class ContainerWolf extends Container
 				}
 				return false;
 			}
+			@Override
+        	public int getSlotStackLimit() {
+        		return 1;
+        	}
         });
         for (int j = 0; j < 3; ++j) {
             for (int k = 0; k < 9; ++k) {

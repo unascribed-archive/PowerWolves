@@ -15,10 +15,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.inventory.GuiScreenHorseInventory;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityAgeable;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.IEntityLivingData;
+import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.monster.EntityEnderman;
 import net.minecraft.entity.passive.EntityChicken;
 import net.minecraft.entity.passive.EntityHorse;
@@ -32,8 +35,11 @@ import net.minecraft.item.ItemNameTag;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.play.server.S2DPacketOpenWindow;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
@@ -43,7 +49,18 @@ public class EntityPowerWolf extends EntityWolf {
 
 	public static final int ENTITY_ID = 0;
 	private WolfType type = WolfType.ARCTIC_WOLF;
-	public AnimalChest inventory = new AnimalChest("PowerWolfInventory", 3);
+	public AnimalChest inventory = new AnimalChest("PowerWolfInventory", 3) {
+		private boolean oldSitting;
+		@Override
+		public void openInventory() {
+			oldSitting = isSitting();
+			setSitting(true);
+		}
+		@Override
+		public void closeInventory() {
+			setSitting(oldSitting);
+		}
+	};
 	
 	public EntityPowerWolf(World w) {
 		super(w);
@@ -60,8 +77,50 @@ public class EntityPowerWolf extends EntityWolf {
 		super.entityInit();
 		dataWatcher.addObject(24, 0);
 		dataWatcher.addObject(25, new ItemStack(PowerWolvesMod.COLLAR));
+		dataWatcher.addObject(26, new ItemStack(PowerWolvesMod.FANGS));
 		dataWatcher.updateObject(25, null);
+		dataWatcher.updateObject(26, null);
 	}
+
+	@Override
+	protected void applyEntityAttributes() {
+        super.applyEntityAttributes();
+        this.getAttributeMap().registerAttribute(SharedMonsterAttributes.attackDamage);
+        getEntityAttribute(SharedMonsterAttributes.attackDamage).setBaseValue(2);
+    }
+	
+	@Override
+	public boolean attackEntityAsMob(Entity entity) {
+        float baseDamage = (float)this.getEntityAttribute(SharedMonsterAttributes.attackDamage).getAttributeValue();
+        int knockback = 0;
+
+        if (entity instanceof EntityLivingBase) {
+            baseDamage += EnchantmentHelper.getEnchantmentModifierLiving(this, (EntityLivingBase)entity);
+            knockback += EnchantmentHelper.getEnchantmentLevel(PowerWolvesMod.FORCEFUL.effectId, getFangs());
+        }
+
+        boolean shouldDamage = entity.attackEntityFrom(DamageSource.causeMobDamage(this), baseDamage);
+
+        if (shouldDamage) {
+            if (knockback > 0) {
+                entity.addVelocity((double)(-MathHelper.sin(this.rotationYaw * (float)Math.PI / 180.0F) * (float)knockback * 0.5F), 0.1D, (double)(MathHelper.cos(this.rotationYaw * (float)Math.PI / 180.0F) * (float)knockback * 0.5F));
+                this.motionX *= 0.6D;
+                this.motionZ *= 0.6D;
+            }
+
+            if (entity instanceof EntityLivingBase) {
+            	int poison = EnchantmentHelper.getEnchantmentLevel(PowerWolvesMod.VENOMOUS.effectId, getFangs());
+            	if (poison > 0) {
+            		((EntityLivingBase)entity).addPotionEffect(new PotionEffect(Potion.poison.id, 80, poison-1));
+            	}
+                EnchantmentHelper.func_151384_a((EntityLivingBase)entity, this);
+            }
+
+            EnchantmentHelper.func_151385_b(this, entity);
+        }
+
+        return shouldDamage;
+    }
 
 	protected String getLivingSound() {
 		if (isAngry()) {
@@ -131,11 +190,23 @@ public class EntityPowerWolf extends EntityWolf {
 	@Override
 	public void onDeath(DamageSource source) {
 		super.onDeath(source);
-		if (!worldObj.isRemote && hasCollar() && hasCustomNameTag()) {
-			EntityLivingBase owner = getOwner();
-			if (owner instanceof EntityPlayer) {
-				((EntityPlayer)owner).addChatMessage(source.func_151519_b(this));
+		if (!worldObj.isRemote) {
+			if (hasCollar() && hasCustomNameTag()) {
+				EntityLivingBase owner = getOwner();
+				if (owner instanceof EntityPlayer) {
+					((EntityPlayer)owner).addChatMessage(source.func_151519_b(this));
+				}
 			}
+			if (hasCollar()) {
+				entityDropItem(getCollar(), 0.5f);
+			}
+			if (hasFangs()) {
+				entityDropItem(getFangs(), 0.5f);
+			}
+			if (!isTamed() && getRNG().nextInt(4) == 0) {
+				entityDropItem(new ItemStack(PowerWolvesMod.FANGS), 0.5f);
+			}
+			//entityDropItem(getArmor(), 0.5f);
 		}
 	}
 
@@ -159,9 +230,22 @@ public class EntityPowerWolf extends EntityWolf {
 		dataWatcher.updateObject(25, collar);
 		inventory.setInventorySlotContents(0, collar);
 	}
+	
+	public ItemStack getFangs() {
+		return dataWatcher.getWatchableObjectItemStack(26);
+	}
+
+	public void setFangs(ItemStack fangs) {
+		dataWatcher.updateObject(26, fangs);
+		inventory.setInventorySlotContents(1, fangs);
+	}
 
 	public boolean hasCollar() {
 		return getCollar() != null;
+	}
+	
+	public boolean hasFangs() {
+		return getFangs() != null;
 	}
 	
 	@Override
@@ -171,7 +255,6 @@ public class EntityPowerWolf extends EntityWolf {
 		int y = (int)posY;
 		int z = (int)posZ;
 		BiomeGenBase biome = worldObj.getBiomeGenForCoords(x, z);
-		System.out.println("Spawning wolf in biome "+biome.biomeName+" at "+x+", "+y+", "+z);
 		wolves: for (WolfType w : WolfType.values()) {
 			for (BiomeGenBase b : w.getBiomes()) {
 				if (b == biome) {
@@ -187,9 +270,7 @@ public class EntityPowerWolf extends EntityWolf {
 		for (int i = 0; i < names.length; i++) {
 			names[i] = types.get(i).getFriendlyName();
 		}
-		System.out.println("Candidate types: "+Strings.formatList(names));
 		setType(types.get(getRNG().nextInt(types.size())));
-		System.out.println("Chose type "+getType().getFriendlyName());
 		return null;
 	}
 
@@ -236,7 +317,6 @@ public class EntityPowerWolf extends EntityWolf {
 	@Override
 	public void readEntityFromNBT(NBTTagCompound tag) {
 		super.readEntityFromNBT(tag);
-		System.out.println("Reading wolf NBT");
 		if (tag.hasKey("WolfType", 8)) {
 			setType(WolfType.valueOf(tag.getString("WolfType").toUpperCase().replace(" ", "_")));
 		} else if (tag.hasKey("WolfType", 1)) { 
@@ -246,6 +326,9 @@ public class EntityPowerWolf extends EntityWolf {
 		}
 		if (tag.hasKey("CollarItem")) {
 			setCollar(ItemStack.loadItemStackFromNBT(tag.getCompoundTag("CollarItem")));
+		}
+		if (tag.hasKey("FangsItem")) {
+			setFangs(ItemStack.loadItemStackFromNBT(tag.getCompoundTag("FangsItem")));
 		}
 	}
 
@@ -258,6 +341,12 @@ public class EntityPowerWolf extends EntityWolf {
 			tag.setTag("CollarItem", collar.writeToNBT(new NBTTagCompound()));
 		} else {
 			tag.removeTag("CollarItem");
+		}
+		ItemStack fangs = getFangs();
+		if (fangs != null) {
+			tag.setTag("FangsItem", fangs.writeToNBT(new NBTTagCompound()));
+		} else {
+			tag.removeTag("FangsItem");
 		}
 		tag.removeTag("CustomName");
 	}
@@ -321,5 +410,18 @@ public class EntityPowerWolf extends EntityWolf {
 			child.setType(mate.getType());
 		}
 		return child;
+	}
+
+	@Override
+	public ItemStack getHeldItem() {
+		return getFangs();
+	}
+	
+	public float getFangDamage() {
+		if (hasFangs()) {
+			int dura = getFangs().getItemDamage();
+			return (dura == 0 ? 2 : dura == 1 ? 0.5f : dura == 2 ? 3.5f : 0);
+		}
+		return 0;
 	}
 }

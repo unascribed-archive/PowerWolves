@@ -32,7 +32,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 
 public class RenderPowerWolf extends RenderWolf {
-
+	private static final ResourceLocation mikanTex = new ResourceLocation("powerwolves", "textures/entity/mikan.png");
 	private static final ResourceLocation k9Tex = new ResourceLocation("powerwolves", "textures/entity/k9.png");
 	private static final ResourceLocation wolfCollarTextures = new ResourceLocation("textures/entity/wolf/wolf_collar.png");
 	
@@ -46,9 +46,13 @@ public class RenderPowerWolf extends RenderWolf {
 	protected ResourceLocation getEntityTexture(Entity ent) {
 		EntityPowerWolf wolf = ((EntityPowerWolf)ent);
 		WolfType t = wolf.getType();
-		if (wolf.getSpecialType() == SpecialWolfType.K9) {
+		SpecialWolfType st = wolf.getSpecialType();
+		if (st == SpecialWolfType.K9) {
 			return k9Tex;
 		}
+		/*if (st == SpecialWolfType.MIKAN) {
+			return mikanTex;
+		}*/
         return t == null ? PowerWolvesMod.wolfResources.get(WolfType.ARCTIC_WOLF) : PowerWolvesMod.wolfResources.get(t);
     }
 	
@@ -102,35 +106,43 @@ public class RenderPowerWolf extends RenderWolf {
 	@Override
 	protected int shouldRenderPass(EntityLivingBase ent, int pass, float partialTicks) {
 		EntityPowerWolf wolf = (EntityPowerWolf)ent;
-        if (pass == 0 && wolf.getWolfShaking()) {
-            float brightness = wolf.getBrightness(partialTicks) * wolf.getShadingWhileShaking(partialTicks);
-            bindTexture(getEntityTexture(ent));
-            GL11.glColor3f(brightness, brightness, brightness);
-            return 1;
-        } else if (pass == 1 && wolf.isTamed()) {
-        	ItemStack collar = wolf.getCollar();
-        	if (collar == null) return -1;
-        	int color;
-        	NBTTagCompound nbt = collar.getTagCompound();
-        	if (nbt != null && nbt.hasKey("Color")) {
-        		color = nbt.getInteger("Color");
-        	} else {
-        		color = 0xFFFFFF;
-        	}
-        	int red = color >> 16 & 255;
-            int green = color >> 8 & 255;
-            int blue = color & 255;
-            bindTexture(wolfCollarTextures);
-            float s = 1.001f;
-            GL11.glScalef(s, s, s);
-            GL11.glColor3f(red/255f, green/255f, blue/255f);
-            return collar.hasEffect(0) ? 15 : 1;
-        } else if (pass == 2) {
-        	return 0;
-        } else if (pass == 3) {
-        	return 0;
-        } else {
-            return -1;
-        }
+		/*boolean mikan = wolf.getSpecialType() == SpecialWolfType.MIKAN;
+		if (mikan) {
+			setRenderPassModel(player);
+			GL11.glScalef(0.75f, 0.75f, 0.75f);
+			player.isSneak = wolf.isSitting();
+			player.isChild = wolf.isChild();
+		} else {
+			setRenderPassModel(mainModel);
+		}*/
+		if (pass == 0) {
+			float brightness = wolf.getBrightness(partialTicks) * wolf.getShadingWhileShaking(partialTicks);
+			bindTexture(getEntityTexture(ent));
+			GL11.glColor3f(brightness, brightness, brightness);
+			return 1;
+		} else if (pass == 1) {
+			/*if (mikan) {
+				return 0;
+			} else {*/
+				ItemStack collar = wolf.getCollar();
+				if (collar == null) return -1;
+				int color;
+				NBTTagCompound nbt = collar.getTagCompound();
+				if (nbt != null && nbt.hasKey("Color")) {
+					color = nbt.getInteger("Color");
+				} else {
+					color = 0xFFFFFF;
+				}
+				int red = color >> 16 & 255;
+				int green = color >> 8 & 255;
+				int blue = color & 255;
+				bindTexture(wolfCollarTextures);
+				float s = 1.001f;
+				GL11.glScalef(s, s, s);
+				GL11.glColor3f(red/255f, green/255f, blue/255f);
+				return collar.hasEffect(0) ? 15 : 1;
+			//}
+		}
+		return -1;
     }
 }

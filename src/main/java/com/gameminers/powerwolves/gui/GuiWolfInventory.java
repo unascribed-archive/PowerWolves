@@ -1,5 +1,7 @@
 package com.gameminers.powerwolves.gui;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import gminers.glasspane.component.PaneImage;
@@ -12,18 +14,29 @@ import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.EnumCreatureAttribute;
+import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.passive.EntityHorse;
 import net.minecraft.inventory.ContainerHorseInventory;
 import net.minecraft.inventory.IInventory;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
+import com.gameminers.powerwolves.PowerWolvesMod;
 import com.gameminers.powerwolves.entity.EntityPowerWolf;
 import com.gameminers.powerwolves.enums.SpecialWolfType;
 import com.gameminers.powerwolves.inventory.ContainerWolf;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 
 @SideOnly(Side.CLIENT)
 public class GuiWolfInventory extends GuiContainer
@@ -81,11 +94,20 @@ public class GuiWolfInventory extends GuiContainer
         	drawCenteredString(fontRendererObj, "\u00A7cNo Collar", textX+41, textY, 0xFFFFFFFF);
         	textY+=12;
         }
+        float damage = (float)wolf.getEntityAttribute(SharedMonsterAttributes.attackDamage).getAttributeValue();
+        if (wolf.hasFangs()) {
+        	ItemStack fangs = wolf.getFangs();
+        	int dura = fangs.getItemDamage();
+    		damage += wolf.getFangDamage();
+        }
+        damage += EnchantmentHelper.func_152377_a(wolf.getFangs(), EnumCreatureAttribute.UNDEFINED);
         SpecialWolfType type = wolf.getSpecialType();
         if (type != null) {
         	drawCenteredString(fontRendererObj, "Special: \u00A7e"+type.getDescription(), textX+41, textY, 0xFFFFFFFF);
         	textY+=12;
         }
+        drawCenteredString(fontRendererObj, "Damage: \u00A7e"+damage, textX+41, textY, 0xFFFFFFFF);
+    	textY+=12;
     }
 
     private int zoom = 28;
