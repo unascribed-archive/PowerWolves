@@ -15,6 +15,7 @@ import net.minecraft.util.IIcon;
 public class ItemCollar extends Item {
 	private IIcon collarBase;
 	private IIcon collarStud;
+	private IIcon collarStudDiamond;
 	public ItemCollar() {
 		setCreativeTab(CreativeTabs.tabMisc);
 		setUnlocalizedName("collar");
@@ -42,13 +43,20 @@ public class ItemCollar extends Item {
 		return 1;
 	}
 	@Override
+	public String getUnlocalizedName(ItemStack stack) {
+		int meta = stack.getItemDamage();
+		return "item."+(meta == 0 ? "collar" : "diamond_collar");
+	}
+	@Override
 	public IIcon getIcon(ItemStack stack, int pass) {
-		return pass == 0 ? collarBase : collarStud;
+		int meta = stack.getItemDamage();
+		return pass == 0 ? collarBase : meta == 0 ? collarStud : collarStudDiamond;
 	}
 	@Override
 	public void registerIcons(IIconRegister registry) {
 		collarBase = registry.registerIcon("powerwolves:collar");
 		collarStud = registry.registerIcon("powerwolves:collar_stud");
+		collarStudDiamond = registry.registerIcon("powerwolves:collar_stud_diamond");
 	}
 	public boolean hasColor(ItemStack is) {
 		if (is.hasTagCompound()) {
@@ -75,4 +83,15 @@ public class ItemCollar extends Item {
 			list.add("Color: #"+Integer.toHexString(getColorFromItemStack(stack, 0)).toUpperCase());
 		}
 	}
+	@Override
+	public boolean getHasSubtypes() {
+		return true;
+	}
+	@Override
+	public void getSubItems(Item p_150895_1_, CreativeTabs p_150895_2_,
+			List p_150895_3_) {
+		p_150895_3_.add(new ItemStack(p_150895_1_, 1, 0));
+		p_150895_3_.add(new ItemStack(p_150895_1_, 1, 1));
+	}
 }
+

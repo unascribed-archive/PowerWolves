@@ -35,6 +35,14 @@ public class RenderPowerWolf extends RenderWolf {
 	private static final ResourceLocation mikanTex = new ResourceLocation("powerwolves", "textures/entity/mikan.png");
 	private static final ResourceLocation k9Tex = new ResourceLocation("powerwolves", "textures/entity/k9.png");
 	private static final ResourceLocation wolfCollarTextures = new ResourceLocation("textures/entity/wolf/wolf_collar.png");
+	private static final ResourceLocation[] armorTextures = {
+		new ResourceLocation("powerwolves", "textures/model/armor/leather.png"),
+		new ResourceLocation("powerwolves", "textures/model/armor/chain.png"),
+		new ResourceLocation("powerwolves", "textures/model/armor/iron.png"),
+		new ResourceLocation("powerwolves", "textures/model/armor/gold.png"),
+		new ResourceLocation("powerwolves", "textures/model/armor/diamond.png"),
+		new ResourceLocation("powerwolves", "textures/model/armor/invincium.png")
+	};
 	
 	private final ModelBiped player = new ModelBiped();
 	
@@ -142,6 +150,14 @@ public class RenderPowerWolf extends RenderWolf {
 				GL11.glColor3f(red/255f, green/255f, blue/255f);
 				return collar.hasEffect(0) ? 15 : 1;
 			//}
+		} else if (pass == 2) {
+			if (wolf.hasArmor()) {
+				ItemStack armor = wolf.getArmor();
+				GL11.glTranslatef(-0.1f, -0.1f, -0.1f);
+				GL11.glScalef(1.2f, 1.2f, 1.2f);
+				bindTexture(armorTextures[PowerWolvesMod.WOLF_ARMOR.getType(armor)]);
+				return armor.hasEffect(0) ? 15 : 1;
+			}
 		}
 		return -1;
     }

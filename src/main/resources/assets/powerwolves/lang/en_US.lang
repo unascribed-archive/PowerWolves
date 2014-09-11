@@ -3,15 +3,50 @@ language.region=US
 language.code=en_US
 
 item.collar.name=Collar
+item.diamond_collar.name=Diamond-Studded Collar
 item.transmutator.name=Transmutator
 item.fangs.iron.name=Artificial Fangs
 item.fangs.normal.name=Fangs
 item.fangs.diamond.name=Diamond-Tipped Fangs
 item.ironNugget.name=Iron Nugget
 
+item.wolf_armor.leather.name=Leather Wolf Armor
+item.wolf_armor.chain.name=Chainmail Wolf Armor
+item.wolf_armor.iron.name=Iron Wolf Armor
+item.wolf_armor.gold.name=Gold Wolf Armor
+item.wolf_armor.diamond.name=Diamond Wolf Armor
+item.wolf_armor.invincium.name=Invincium Wolf Armor
+
 enchantment.vicious=Vicious
 enchantment.forceful=Forceful
 enchantment.venomous=Venomous
+
+achievement.find_doges=Empowered
+achievement.find_doges.desc=Find and tame a wolf.
+achievement.collar=Friendship
+achievement.collar.desc=Craft a collar and give your new friend a name. (Use an anvil!)
+achievement.find_all=Leader
+achievement.find_all.desc=Tame one of every breed of wolf, except Mushrolves.
+achievement.find_mushrolves=Illusive
+achievement.find_mushrolves.desc=Tame a Red and Brown Mushrolf.
+achievement.fangs=Dentist
+achievement.fangs.desc=Equip a wolf with a set of fangs.
+achievement.diamond_collar=Ornate
+achievement.diamond_collar.desc=Equip a wolf with a diamond-studded collar. Because you care. (Don't forget to name it)
+achievement.murder=Heartless
+achievement.murder.desc=Kill a wolf in cold blood.
+achievement.armor=Protective
+achievement.armor.desc=Equip a wolf with a set of armor.
+achievement.enchant=Magical
+achievement.enchant.desc=Equip a wolf with an enchanted collar, armor set, or set of fangs.
+achievement.oops=It Happens
+achievement.oops.desc=Accidentally kill one of your wolves.
+achievement.op=Overpowered
+achievement.op.desc=Have one of your wolves deal eight hearts of damage in one hit.
+achievement.kennel=Dimensional
+achievement.kennel.desc=Craft a Dimensional Kennel.
+achievement.army=General
+achievement.army.desc=Tame ten wolves, and arm them to the teeth (literally).
 
 entity.powerwolves.wolf.name=Power Wolf
 

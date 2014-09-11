@@ -80,6 +80,7 @@ public class GuiWolfInventory extends GuiContainer
         
         drawGradientRect(x - 3, y - 3, x + width + 3, y - 3 + 1, 1347420415, 1347420415);
         drawGradientRect(x - 3, y + height + 2, x + width + 3, y + height + 3, 1344798840, 1344798840);
+        
         int healthX = x-3;
         int healthY = 65;
         Rendering.drawRect(healthX, healthY, healthX+88, healthY+5, 0xFFFF5555);
@@ -95,18 +96,17 @@ public class GuiWolfInventory extends GuiContainer
         	textY+=12;
         }
         float damage = (float)wolf.getEntityAttribute(SharedMonsterAttributes.attackDamage).getAttributeValue();
-        if (wolf.hasFangs()) {
-        	ItemStack fangs = wolf.getFangs();
-        	int dura = fangs.getItemDamage();
-    		damage += wolf.getFangDamage();
-        }
+        damage += wolf.getFangDamage();
         damage += EnchantmentHelper.func_152377_a(wolf.getFangs(), EnumCreatureAttribute.UNDEFINED);
+        float damageReduction = (wolf.getTotalArmorValue()*4f)/100f;
         SpecialWolfType type = wolf.getSpecialType();
         if (type != null) {
         	drawCenteredString(fontRendererObj, "Special: \u00A7e"+type.getDescription(), textX+41, textY, 0xFFFFFFFF);
         	textY+=12;
         }
         drawCenteredString(fontRendererObj, "Damage: \u00A7e"+damage, textX+41, textY, 0xFFFFFFFF);
+    	textY+=12;
+    	drawCenteredString(fontRendererObj, "Resistance: \u00A7e"+((int)(damageReduction*100f))+"%", textX+41, textY, 0xFFFFFFFF);
     	textY+=12;
     }
 

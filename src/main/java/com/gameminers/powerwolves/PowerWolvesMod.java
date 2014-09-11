@@ -15,6 +15,7 @@ import com.gameminers.powerwolves.enums.WolfType;
 import com.gameminers.powerwolves.item.ItemCollar;
 import com.gameminers.powerwolves.item.ItemFangs;
 import com.gameminers.powerwolves.item.ItemTransmutator;
+import com.gameminers.powerwolves.item.ItemWolfArmor;
 import com.gameminers.powerwolves.proxy.CommonProxy;
 import com.google.common.collect.Maps;
 import com.google.common.eventbus.Subscribe;
@@ -30,17 +31,24 @@ import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.passive.EntityWolf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.projectile.EntityEgg;
+import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.potion.Potion;
+import net.minecraft.stats.Achievement;
+import net.minecraft.stats.AchievementList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.biome.BiomeGenBase.SpawnListEntry;
+import net.minecraftforge.common.AchievementPage;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.player.AchievementEvent;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.oredict.ShapedOreRecipe;
 import cpw.mods.fml.client.registry.RenderingRegistry;
@@ -70,16 +78,27 @@ public class PowerWolvesMod {
 	public static ItemFangs FANGS = new ItemFangs();
 	public static ItemTransmutator TRANSMUTATOR = new ItemTransmutator();
 	public static Item IRON_NUGGET;
+	public static ItemWolfArmor WOLF_ARMOR = new ItemWolfArmor();
 	
 	public static EnchantmentWolfDamage VICIOUS;
 	public static EnchantmentWolfKnockback FORCEFUL;
 	public static EnchantmentWolfPoison VENOMOUS;
+	
+	public static Achievement aPowerful = new Achievement("find_doges", "find_doges", 0, 0, Items.bone, null).initIndependentStat().registerStat();
+	public static Achievement aFriends = new Achievement("collar", "collar", 2, 0, COLLAR, aPowerful).registerStat();
+	public static Achievement aFindAll = new Achievement("find_all", "find_all", 0, -3, Items.porkchop, aPowerful).setSpecial().registerStat();
+	public static Achievement aMushrolves = new Achievement("find_mushrolves", "find_mushrolves", -2, -2, Blocks.brown_mushroom, aPowerful).setSpecial().registerStat();
+	public static Achievement aDentist = new Achievement("fangs", "fangs", 3, 1, FANGS, aFriends).registerStat();
+	public static Achievement aDiamond = new Achievement("diamond_collar", "diamond_collar", 2, -2, new ItemStack(COLLAR, 1, 1), aFriends).registerStat();
+	public static Achievement aOP = new Achievement("op", "op", 4, 0, ench(new ItemStack(FANGS, 1, 2)), aDentist).setSpecial().registerStat();
+	public static AchievementPage achievements = new AchievementPage("Power Wolves", aPowerful, aFriends, aDentist, aOP, aFindAll, aMushrolves, aDiamond);
 	
 	private static Configuration config = new Configuration(new File("config/powerwolves.cfg"));
 	
 	@EventHandler
 	public void onInit(FMLInitializationEvent e) {
 		WolfType.printSpawnConditions();
+		AchievementPage.registerAchievementPage(achievements);
 		EntityRegistry.registerModEntity(EntityPowerWolf.class, "wolf", EntityPowerWolf.ENTITY_ID, this, 96, 1, true);
 		try {
 			Class.forName("com.thoughtcomplex.horizon.items.ItemCustomSpawnEgg");
@@ -110,6 +129,7 @@ public class PowerWolvesMod {
 		GameRegistry.registerItem(COLLAR, "collar", "powerwolves");
 		GameRegistry.registerItem(FANGS, "fangs", "powerwolves");
 		GameRegistry.registerItem(TRANSMUTATOR, "transmutator", "powerwolves");
+		GameRegistry.registerItem(WOLF_ARMOR, "wolf_armor", "powerwolves");
 		if (OreDictionary.getOres("nuggetIron").isEmpty()) {
 			IRON_NUGGET = new Item().setUnlocalizedName("ironNugget").setCreativeTab(CreativeTabs.tabMaterials).setTextureName("powerwolves:iron_nugget");
 			GameRegistry.registerItem(IRON_NUGGET, "iron_nugget", "powerwolves");
@@ -128,6 +148,12 @@ public class PowerWolvesMod {
 				'S', Items.string,
 				'G', "nuggetGold"
 				));
+		GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(COLLAR, 1, 1), 
+				"SSS",
+				"SDS",
+				'S', Items.string,
+				'D', "diamond"
+				));
 		GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(FANGS, 1, 1), 
 				"III",
 				"NNN",
@@ -140,6 +166,56 @@ public class PowerWolvesMod {
 				'F', new ItemStack(FANGS, 1, 0),
 				'D', "gemDiamond"
 				));
+		
+		GameRegistry.addRecipe(new ShapedOreRecipe(WOLF_ARMOR.setType(new ItemStack(WOLF_ARMOR), 0), 
+				"  H",
+				"III",
+				"B B",
+				'H', Items.leather_helmet,
+				'I', Items.leather,
+				'B', Items.leather_boots 
+				));
+		GameRegistry.addRecipe(new ShapedOreRecipe(WOLF_ARMOR.setType(new ItemStack(WOLF_ARMOR), 1), 
+				"  H",
+				"III",
+				"B B",
+				'H', Items.chainmail_helmet,
+				'I', "ingotIron",
+				'B', Items.chainmail_boots 
+				));
+		GameRegistry.addRecipe(new ShapedOreRecipe(WOLF_ARMOR.setType(new ItemStack(WOLF_ARMOR), 2), 
+				"  H",
+				"III",
+				"B B",
+				'H', Items.iron_helmet,
+				'I', "ingotIron",
+				'B', Items.iron_boots 
+				));
+		GameRegistry.addRecipe(new ShapedOreRecipe(WOLF_ARMOR.setType(new ItemStack(WOLF_ARMOR), 3), 
+				"  H",
+				"III",
+				"B B",
+				'H', Items.golden_helmet,
+				'I', "ingotGold",
+				'B', Items.golden_boots 
+				));
+		GameRegistry.addRecipe(new ShapedOreRecipe(WOLF_ARMOR.setType(new ItemStack(WOLF_ARMOR), 4), 
+				"  H",
+				"III",
+				"B B",
+				'H', Items.diamond_helmet,
+				'I', "gemDiamond",
+				'B', Items.diamond_boots 
+				));
+		GameRegistry.addRecipe(new ShapedOreRecipe(WOLF_ARMOR.setType(new ItemStack(WOLF_ARMOR), 5), 
+				"  H",
+				"III",
+				"B B",
+				'H', Items.diamond_helmet,
+				'I', Blocks.bedrock,
+				'B', Items.diamond_boots 
+				));
+		
 		NetworkRegistry.INSTANCE.registerGuiHandler(this, new PowerWolvesGuiHandler());
 		MinecraftForge.EVENT_BUS.register(this);
 		CraftingManager.getInstance().getRecipeList().add(new RecipesCollarDyes());
@@ -150,6 +226,12 @@ public class PowerWolvesMod {
 		proxy.registerStuff();
 	}
 	
+	private static ItemStack ench(ItemStack itemStack) {
+		itemStack.setTagCompound(new NBTTagCompound());
+		itemStack.getTagCompound().setTag("ench", new NBTTagList());
+		return itemStack;
+	}
+
 	private int enchantId = 150;
 	
 	private int getEnchantId(String string) {
@@ -177,4 +259,5 @@ public class PowerWolvesMod {
 		}
 	}
 }
+
 

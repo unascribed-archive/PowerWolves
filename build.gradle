@@ -62,7 +62,6 @@ dependencies {
 		"../GlassPane/latest-dev.jar",
 		"../KitchenSink/latest-dev.jar",
 		"../CommonsImaging/latest-dev.jar",
-		"../Augment/latest-dev.jar",
-		"../hmt-0.1a-dev.jar"
+		"../Augment/latest-dev.jar"
 	)
 }

@@ -12,6 +12,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemSword;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.IIcon;
 
 public class ItemFangs extends Item {
@@ -36,9 +37,14 @@ public class ItemFangs extends Item {
 		return 4;
 	}
 	@Override
+	public int getMaxDamage(ItemStack stack) {
+		int type = getFangType(stack);
+		return (type == 0 ? 345 : type == 1 ? 251 : type == 2 ? 875 : 32767);
+	}
+	@Override
 	public String getUnlocalizedName(ItemStack stack) {
-		int dura = stack.getItemDamage();
-		return "item.fangs."+(dura == 0 ? "normal" : dura == 1 ? "iron" : dura == 2 ? "diamond" : "unknown");
+		int type = getFangType(stack);
+		return "item.fangs."+(type == 0 ? "normal" : type == 1 ? "iron" : type == 2 ? "diamond" : "unknown");
 	}
 	@Override
 	public IIcon getIconIndex(ItemStack stack) {
@@ -46,8 +52,23 @@ public class ItemFangs extends Item {
 	}
 	@Override
 	public IIcon getIcon(ItemStack stack, int pass) {
-		int dura = stack.getItemDamage();
-		return (dura == 0 ? natural : dura == 1 ? iron : dura == 2 ? diamond : null);
+		int type = getFangType(stack);
+		return (type == 0 ? natural : type == 1 ? iron : type == 2 ? diamond : null);
+	}
+	/**
+	 * 0 = natural
+	 * 1 = iron
+	 * 2 = diamond
+	 */
+	public int getFangType(ItemStack stack) {
+		return stack.hasTagCompound() ? stack.getTagCompound().getByte("FangType") : 0;
+	}
+	public ItemStack setFangType(ItemStack stack, int fangType) {
+		if (!stack.hasTagCompound()) {
+			stack.setTagCompound(new NBTTagCompound());
+		}
+		stack.getTagCompound().setByte("FangType", (byte) fangType);
+		return stack;
 	}
 	@Override
 	public void registerIcons(IIconRegister registry) {
@@ -57,9 +78,9 @@ public class ItemFangs extends Item {
 	}
 	@Override
 	public void getSubItems(Item item, CreativeTabs tab, List list) {
-		list.add(new ItemStack(item, 1, 0));
-		list.add(new ItemStack(item, 1, 1));
-		list.add(new ItemStack(item, 1, 2));
+		for (int i = 0; i < 3; i++) {
+			list.add(setFangType(new ItemStack(item), i));
+		}
 	}
 	@Override
 	public boolean getHasSubtypes() {
@@ -68,8 +89,8 @@ public class ItemFangs extends Item {
 	@Override
 	public Multimap getAttributeModifiers(ItemStack stack) {
 		Multimap multimap = super.getAttributeModifiers(stack);
-		int dura = stack.getItemDamage();
-		double damage = (dura == 0 ? 2 : dura == 1 ? 0.5 : dura == 2 ? 3.5 : null);
+		int type = getFangType(stack);
+		double damage = (type == 0 ? 2 : type == 1 ? 0.5 : type == 2 ? 3.5 : null);
 		multimap.put(SharedMonsterAttributes.attackDamage.getAttributeUnlocalizedName(), new AttributeModifier(field_111210_e, "Fangs modifier", damage, 0));
 		return multimap;
 	}

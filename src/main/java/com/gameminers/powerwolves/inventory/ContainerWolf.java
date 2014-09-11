@@ -5,6 +5,7 @@ import com.gameminers.powerwolves.entity.EntityPowerWolf;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.passive.EntityHorse;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
@@ -34,6 +35,15 @@ public class ContainerWolf extends Container
         	@Override
         	public void onSlotChanged() {
         		wolf.setCollar(getStack());
+        		Entity e = wolf.getOwner();
+        		if (getStack() != null && e != null && e instanceof EntityPlayer) {
+        			if (getStack().hasDisplayName()) {
+        				((EntityPlayer)e).triggerAchievement(PowerWolvesMod.aFriends);
+        				if (getStack().getItemDamage() == 1) {
+            				((EntityPlayer)e).triggerAchievement(PowerWolvesMod.aDiamond);
+            			}
+        			}
+        		}
         	}
         	@Override
         	public int getSlotStackLimit() {
@@ -47,6 +57,10 @@ public class ContainerWolf extends Container
         	@Override
         	public void onSlotChanged() {
         		wolf.setFangs(getStack());
+        		Entity e = wolf.getOwner();
+        		if (getStack() != null && e != null && e instanceof EntityPlayer) {
+        			((EntityPlayer)e).triggerAchievement(PowerWolvesMod.aDentist);
+        		}
         	}
         	@Override
         	public int getSlotStackLimit() {
@@ -55,17 +69,19 @@ public class ContainerWolf extends Container
         });
         addSlotToContainer(new Slot(topInventory, 2, 8, 54) {
         	public boolean isItemValid(ItemStack stack) {
-                return isChestplate(stack) && !this.getHasStack();
+                return stack.getItem() == PowerWolvesMod.WOLF_ARMOR;
             }
-			private boolean isChestplate(ItemStack stack) {
-				if (stack.getItem() instanceof ItemArmor) {
-					return ((ItemArmor)stack.getItem()).armorType == 1;
-				}
-				return false;
-			}
 			@Override
         	public int getSlotStackLimit() {
         		return 1;
+        	}
+			@Override
+        	public void onSlotChanged() {
+        		wolf.setArmor(getStack());
+        		Entity e = wolf.getOwner();
+        		if (getStack() != null && e != null && e instanceof EntityPlayer) {
+        			((EntityPlayer)e).triggerAchievement(PowerWolvesMod.aDentist);
+        		}
         	}
         });
         for (int j = 0; j < 3; ++j) {

@@ -38,7 +38,9 @@ import net.minecraft.network.play.server.S2DPacketOpenWindow;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.stats.AchievementList;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.JsonSerializableSet;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
@@ -78,8 +80,10 @@ public class EntityPowerWolf extends EntityWolf {
 		dataWatcher.addObject(24, 0);
 		dataWatcher.addObject(25, new ItemStack(PowerWolvesMod.COLLAR));
 		dataWatcher.addObject(26, new ItemStack(PowerWolvesMod.FANGS));
+		dataWatcher.addObject(27, new ItemStack(PowerWolvesMod.WOLF_ARMOR));
 		dataWatcher.updateObject(25, null);
 		dataWatcher.updateObject(26, null);
+		dataWatcher.updateObject(27, null);
 	}
 
 	@Override
@@ -90,13 +94,38 @@ public class EntityPowerWolf extends EntityWolf {
     }
 	
 	@Override
+	protected void damageArmor(float p_70675_1_) {
+		if (hasArmor()) {
+			getArmor().damageItem(1, this);
+		}
+	}
+	
+	@Override
+	public int getTotalArmorValue() {
+		if (hasArmor()) {
+			ItemStack armor = getArmor();
+			switch (PowerWolvesMod.WOLF_ARMOR.getType(armor)) {
+			case 0: return 3;
+			case 1: return 6;
+			case 2: return 7;
+			case 3: return 5;
+			case 4: return 10;
+			case 5: return 25;
+			}
+		}
+		return 0;
+	}
+	
+	@Override
 	public boolean attackEntityAsMob(Entity entity) {
         float baseDamage = (float)this.getEntityAttribute(SharedMonsterAttributes.attackDamage).getAttributeValue();
         int knockback = 0;
 
+        ItemStack fangs = getFangs();
+        
         if (entity instanceof EntityLivingBase) {
             baseDamage += EnchantmentHelper.getEnchantmentModifierLiving(this, (EntityLivingBase)entity);
-            knockback += EnchantmentHelper.getEnchantmentLevel(PowerWolvesMod.FORCEFUL.effectId, getFangs());
+            knockback += EnchantmentHelper.getEnchantmentLevel(PowerWolvesMod.FORCEFUL.effectId, fangs);
         }
 
         boolean shouldDamage = entity.attackEntityFrom(DamageSource.causeMobDamage(this), baseDamage);
@@ -109,7 +138,7 @@ public class EntityPowerWolf extends EntityWolf {
             }
 
             if (entity instanceof EntityLivingBase) {
-            	int poison = EnchantmentHelper.getEnchantmentLevel(PowerWolvesMod.VENOMOUS.effectId, getFangs());
+            	int poison = EnchantmentHelper.getEnchantmentLevel(PowerWolvesMod.VENOMOUS.effectId, fangs);
             	if (poison > 0) {
             		((EntityLivingBase)entity).addPotionEffect(new PotionEffect(Potion.poison.id, 80, poison-1));
             	}
@@ -117,6 +146,15 @@ public class EntityPowerWolf extends EntityWolf {
             }
 
             EnchantmentHelper.func_151385_b(this, entity);
+            if (baseDamage >= 16) {
+            	Entity e = getOwner();
+            	if (e instanceof EntityPlayer) {
+            		((EntityPlayer)e).triggerAchievement(PowerWolvesMod.aOP);
+            	}
+            }
+            if (fangs != null) {
+            	fangs.damageItem(1, this);
+            }
         }
 
         return shouldDamage;
@@ -203,6 +241,9 @@ public class EntityPowerWolf extends EntityWolf {
 			if (hasFangs()) {
 				entityDropItem(getFangs(), 0.5f);
 			}
+			if (hasArmor()) {
+				entityDropItem(getArmor(), 0.5f);
+			}
 			if (!isTamed() && getRNG().nextInt(4) == 0) {
 				entityDropItem(new ItemStack(PowerWolvesMod.FANGS), 0.5f);
 			}
@@ -231,6 +272,10 @@ public class EntityPowerWolf extends EntityWolf {
 		inventory.setInventorySlotContents(0, collar);
 	}
 	
+	public boolean hasCollar() {
+		return getCollar() != null;
+	}
+	
 	public ItemStack getFangs() {
 		return dataWatcher.getWatchableObjectItemStack(26);
 	}
@@ -240,12 +285,21 @@ public class EntityPowerWolf extends EntityWolf {
 		inventory.setInventorySlotContents(1, fangs);
 	}
 
-	public boolean hasCollar() {
-		return getCollar() != null;
-	}
-	
 	public boolean hasFangs() {
 		return getFangs() != null;
+	}
+	
+	public ItemStack getArmor() {
+		return dataWatcher.getWatchableObjectItemStack(27);
+	}
+
+	public void setArmor(ItemStack armor) {
+		dataWatcher.updateObject(27, armor);
+		inventory.setInventorySlotContents(2, armor);
+	}
+
+	public boolean hasArmor() {
+		return getArmor() != null;
 	}
 	
 	@Override
@@ -330,6 +384,9 @@ public class EntityPowerWolf extends EntityWolf {
 		if (tag.hasKey("FangsItem")) {
 			setFangs(ItemStack.loadItemStackFromNBT(tag.getCompoundTag("FangsItem")));
 		}
+		if (tag.hasKey("ArmorItem")) {
+			setArmor(ItemStack.loadItemStackFromNBT(tag.getCompoundTag("ArmorItem")));
+		}
 	}
 
 	@Override
@@ -347,6 +404,12 @@ public class EntityPowerWolf extends EntityWolf {
 			tag.setTag("FangsItem", fangs.writeToNBT(new NBTTagCompound()));
 		} else {
 			tag.removeTag("FangsItem");
+		}
+		ItemStack armor = getArmor();
+		if (armor != null) {
+			tag.setTag("ArmorItem", armor.writeToNBT(new NBTTagCompound()));
+		} else {
+			tag.removeTag("ArmorItem");
 		}
 		tag.removeTag("CustomName");
 	}
@@ -386,6 +449,32 @@ public class EntityPowerWolf extends EntityWolf {
 		}
 	}
 
+	@Override
+	protected void playTameEffect(boolean p_70908_1_) {
+		super.playTameEffect(p_70908_1_);
+		if (p_70908_1_) {
+			Entity e = getOwner();
+			if (e instanceof EntityPlayer) {
+				EntityPlayer p = (EntityPlayer)e;
+				p.triggerAchievement(PowerWolvesMod.aPowerful);
+				if (p instanceof EntityPlayerMP) {
+					EntityPlayerMP mp = (EntityPlayerMP)p;
+					JsonSerializableSet set = (JsonSerializableSet) ((EntityPlayerMP) p).func_147099_x().func_150870_b(PowerWolvesMod.aFindAll);
+					if (set == null) {
+						set = (JsonSerializableSet)mp.func_147099_x().func_150872_a(PowerWolvesMod.aFindAll, new JsonSerializableSet());;
+					}
+					set.add(getType().name());
+					if (mp.func_147099_x().canUnlockAchievement(PowerWolvesMod.aFindAll) && set.contains(WolfType.ARCTIC_WOLF.name()) && set.contains(WolfType.ALASKAN_HUSKY.name()) && set.contains(WolfType.CHOCOLATE_LAB.name()) && set.contains(WolfType.GERMAN_SHEPHERD.name()) && set.contains(WolfType.SHIBA_INU.name())) {
+						p.triggerAchievement(PowerWolvesMod.aFindAll);
+					}
+					if (mp.func_147099_x().canUnlockAchievement(PowerWolvesMod.aMushrolves) && set.contains(WolfType.RED_MUSHROLF.name()) && set.contains(WolfType.BROWN_MUSHROLF.name())) {
+						p.triggerAchievement(PowerWolvesMod.aMushrolves);
+					}
+				}
+			}
+		}
+	}
+	
 	public void spawnTransmutationParticles() {
 		for (int i = 0; i < 100; ++i) {
 			double d2 = this.rand.nextGaussian() * 0.02D;
@@ -419,8 +508,8 @@ public class EntityPowerWolf extends EntityWolf {
 	
 	public float getFangDamage() {
 		if (hasFangs()) {
-			int dura = getFangs().getItemDamage();
-			return (dura == 0 ? 2 : dura == 1 ? 0.5f : dura == 2 ? 3.5f : 0);
+			int type = PowerWolvesMod.FANGS.getFangType(getFangs());
+			return (type == 0 ? 2 : type == 1 ? 0.5f : type == 2 ? 3.5f : 0);
 		}
 		return 0;
 	}
