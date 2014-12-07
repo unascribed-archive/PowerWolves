@@ -15,9 +15,16 @@ buildscript {
     }
 }
 
+repositories {
+    maven {
+        name = "gameminers"
+        url = "http://mvn.gameminers.com/artifactory/repo"
+    }
+}
+
 apply plugin: 'forge'
 
-version = "0.3"
+version = "0.4"
 group= "com.gameminers.powerwolves" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "PowerWolves"
 
@@ -35,7 +42,7 @@ task delombokJavadocs(type: Javadoc, dependsOn: delombok) {
 }
 
 minecraft {
-    version = "1.7.10-10.13.0.1187"
+    version = "1.7.10-10.13.0.1208"
     assetDir = "eclipse/assets"
 }
 processResources
@@ -56,12 +63,7 @@ processResources
 dependencies {
 	compile (
 		'org.projectlombok:lombok:1.12.6',
-	)
-	compile files (
-		"../LibShapeDraw/latest-dev.jar",
-		"../GlassPane/latest-dev.jar",
-		"../KitchenSink/latest-dev.jar",
-		"../CommonsImaging/latest-dev.jar",
-		"../Augment/latest-dev.jar"
+		'com.gameminers:glasspane:1.0:dev',
+		'com.gameminers:kitchensink:1.0:dev'
 	)
 }
