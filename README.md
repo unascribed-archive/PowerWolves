@@ -8,4 +8,4 @@ Yes, you can use it in modpacks. It's not a good idea but go ahead.
 
 Compiling
 =========
-`./gradlew build`. Your file is at ./build/libs/PowerDoges-&lt;version&gt;.jar
+`./gradlew build`. Your file is at ./build/libs/PowerWolves-&lt;version&gt;.jar
