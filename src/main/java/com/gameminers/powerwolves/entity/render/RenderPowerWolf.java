@@ -143,7 +143,7 @@ public class RenderPowerWolf extends RenderWolf {
 				return collar.hasEffect(0) ? 15 : 1;
 			//}
 		} else if (pass == 2) {
-			if (false || wolf.hasArmor()) {
+			if (false && wolf.hasArmor()) {
 				ItemStack armor = wolf.getArmor();
 				GL11.glTranslatef(-0.1f, -0.1f, -0.1f);
 				GL11.glScalef(1.2f, 1.2f, 1.2f);
