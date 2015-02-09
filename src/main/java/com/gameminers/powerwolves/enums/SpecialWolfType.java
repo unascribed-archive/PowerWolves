@@ -1,26 +1,19 @@
 package com.gameminers.powerwolves.enums;
 
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.experimental.NonFinal;
-import net.minecraft.world.biome.BiomeGenBase;
-
-import static com.gameminers.powerwolves.enums.WolfType.*;
 
 @Getter
 @FieldDefaults(level=AccessLevel.PRIVATE,makeFinal=true)
 public enum SpecialWolfType {
-	K9("K-9 Mark IV", "Robotic"),
-	SHIZUNE("Shizune", "Silent"),
-	MIKAN("Mikan", "Humanoid"),
-	BLANK("[          ]", "Split")
+	K9("K-9 Mark IV", "Robotic"), // Blame Drayko
+	SHIZUNE("Shizune", "Silent"), // This one's my fault
+	MIKAN("Mikan", "Humanoid"), // Blame Science
+	BLANK("[          ]", "Split") // Also Science
 	;
 	String requiredNameTag;
 	Set<WolfType> applicableBreeds;
