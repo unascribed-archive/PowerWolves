@@ -1,51 +1,32 @@
 package com.gameminers.powerwolves.entity;
 
-import gminers.kitchensink.Strings;
-
 import java.util.ArrayList;
 import java.util.List;
 
-import com.gameminers.powerwolves.PowerWolvesMod;
-import com.gameminers.powerwolves.enums.SpecialWolfType;
-import com.gameminers.powerwolves.enums.WolfType;
-import com.gameminers.powerwolves.gui.GuiWolfInventory;
-import com.gameminers.powerwolves.inventory.ContainerWolf;
-
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.gui.inventory.GuiScreenHorseInventory;
-import net.minecraft.client.resources.I18n;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityAgeable;
-import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.monster.EntityEnderman;
-import net.minecraft.entity.passive.EntityChicken;
-import net.minecraft.entity.passive.EntityHorse;
 import net.minecraft.entity.passive.EntityWolf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Items;
 import net.minecraft.inventory.AnimalChest;
-import net.minecraft.inventory.ContainerHorseInventory;
-import net.minecraft.item.ItemNameTag;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.play.server.S2DPacketOpenWindow;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.stats.AchievementList;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.JsonSerializableSet;
 import net.minecraft.util.MathHelper;
-import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
 import net.minecraft.world.biome.BiomeGenBase;
+
+import com.gameminers.powerwolves.PowerWolvesMod;
+import com.gameminers.powerwolves.enums.SpecialWolfType;
+import com.gameminers.powerwolves.enums.WolfType;
 
 public class EntityPowerWolf extends EntityWolf {
 
@@ -429,7 +410,7 @@ public class EntityPowerWolf extends EntityWolf {
 	}
 
 	public String getCommandSenderName() {
-        return hasCustomNameTag() ? this.getCustomNameTag() : I18n.format("entity.powerwolves.wolf.name");
+        return hasCustomNameTag() ? this.getCustomNameTag() : "Power Wolf";
     }
 	
 	@Override

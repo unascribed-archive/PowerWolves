@@ -5,32 +5,10 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 
-import com.gameminers.powerwolves.enchantment.EnchantmentWolfDamage;
-import com.gameminers.powerwolves.enchantment.EnchantmentWolfKnockback;
-import com.gameminers.powerwolves.enchantment.EnchantmentWolfPoison;
-import com.gameminers.powerwolves.entity.EntityPowerWolf;
-import com.gameminers.powerwolves.entity.render.ModelPowerWolf;
-import com.gameminers.powerwolves.entity.render.RenderPowerWolf;
-import com.gameminers.powerwolves.enums.WolfType;
-import com.gameminers.powerwolves.item.ItemCollar;
-import com.gameminers.powerwolves.item.ItemFangs;
-import com.gameminers.powerwolves.item.ItemTransmutator;
-import com.gameminers.powerwolves.item.ItemWolfArmor;
-import com.gameminers.powerwolves.proxy.CommonProxy;
-import com.google.common.collect.Maps;
-import com.google.common.eventbus.Subscribe;
-
-import net.minecraft.block.Block;
-import net.minecraft.client.audio.SoundRegistry;
-import net.minecraft.client.model.ModelWolf;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.passive.EntityWolf;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.projectile.EntityEgg;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
@@ -38,9 +16,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.potion.Potion;
 import net.minecraft.stats.Achievement;
-import net.minecraft.stats.AchievementList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.biome.BiomeGenBase.SpawnListEntry;
@@ -48,23 +24,33 @@ import net.minecraftforge.common.AchievementPage;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
-import net.minecraftforge.event.entity.player.AchievementEvent;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.oredict.ShapedOreRecipe;
-import cpw.mods.fml.client.registry.RenderingRegistry;
+
+import com.gameminers.powerwolves.enchantment.EnchantmentWolfDamage;
+import com.gameminers.powerwolves.enchantment.EnchantmentWolfKnockback;
+import com.gameminers.powerwolves.enchantment.EnchantmentWolfPoison;
+import com.gameminers.powerwolves.entity.EntityPowerWolf;
+import com.gameminers.powerwolves.enums.WolfType;
+import com.gameminers.powerwolves.item.ItemCollar;
+import com.gameminers.powerwolves.item.ItemFangs;
+import com.gameminers.powerwolves.item.ItemTransmutator;
+import com.gameminers.powerwolves.item.ItemWolfArmor;
+import com.gameminers.powerwolves.proxy.CommonProxy;
+import com.google.common.collect.Maps;
+
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
-import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
-import cpw.mods.fml.common.Mod.InstanceFactory;
+import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.registry.EntityRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
 
-@Mod(modid="powerwolves", name="Power Wolves", version="0.3", dependencies="required-after:KitchenSink;after:hmt")
+@Mod(modid="powerwolves", name="Power Wolves", version="0.4.1", dependencies="required-after:KitchenSink;after:hmt")
 public class PowerWolvesMod {
 	public static final String DOGECOIN_DONATION_ADDRESS = "D8dNpUyW2UwXGTxSr7VSPKo34BeBKnHjoY";
 	public static final Map<WolfType, ResourceLocation> wolfResources = Maps.newHashMap();

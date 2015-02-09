@@ -1,5 +1,19 @@
 package com.gameminers.powerwolves.entity.render;
 
+import net.minecraft.block.Block;
+import net.minecraft.client.model.ModelBase;
+import net.minecraft.client.model.ModelBiped;
+import net.minecraft.client.model.ModelRenderer;
+import net.minecraft.client.model.ModelWolf;
+import net.minecraft.client.renderer.entity.RenderWolf;
+import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.init.Blocks;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
+
 import org.lwjgl.opengl.GL11;
 
 import com.gameminers.powerwolves.PowerWolvesMod;
@@ -8,28 +22,6 @@ import com.gameminers.powerwolves.enums.SpecialWolfType;
 import com.gameminers.powerwolves.enums.WolfType;
 
 import cpw.mods.fml.common.ObfuscationReflectionHelper;
-import net.minecraft.block.Block;
-import net.minecraft.client.model.ModelBase;
-import net.minecraft.client.model.ModelBiped;
-import net.minecraft.client.model.ModelQuadruped;
-import net.minecraft.client.model.ModelRenderer;
-import net.minecraft.client.model.ModelWolf;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.entity.RenderItem;
-import net.minecraft.client.renderer.entity.RenderMooshroom;
-import net.minecraft.client.renderer.entity.RenderPlayer;
-import net.minecraft.client.renderer.entity.RenderWolf;
-import net.minecraft.client.renderer.texture.TextureMap;
-import net.minecraft.client.shader.TesselatorVertexState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.passive.EntityMooshroom;
-import net.minecraft.entity.passive.EntitySheep;
-import net.minecraft.entity.passive.EntityWolf;
-import net.minecraft.init.Blocks;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.ResourceLocation;
 
 public class RenderPowerWolf extends RenderWolf {
 	private static final ResourceLocation mikanTex = new ResourceLocation("powerwolves", "textures/entity/mikan.png");
@@ -151,7 +143,7 @@ public class RenderPowerWolf extends RenderWolf {
 				return collar.hasEffect(0) ? 15 : 1;
 			//}
 		} else if (pass == 2) {
-			if (wolf.hasArmor()) {
+			if (false || wolf.hasArmor()) {
 				ItemStack armor = wolf.getArmor();
 				GL11.glTranslatef(-0.1f, -0.1f, -0.1f);
 				GL11.glScalef(1.2f, 1.2f, 1.2f);
