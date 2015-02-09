@@ -50,7 +50,7 @@ import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.registry.EntityRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
 
-@Mod(modid="powerwolves", name="Power Wolves", version="0.4.1", dependencies="required-after:KitchenSink;after:hmt")
+@Mod(modid="powerwolves", name="Power Wolves", version="0.4.2", dependencies="required-after:KitchenSink;after:hmt")
 public class PowerWolvesMod {
 	public static final String DOGECOIN_DONATION_ADDRESS = "D8dNpUyW2UwXGTxSr7VSPKo34BeBKnHjoY";
 	public static final Map<WolfType, ResourceLocation> wolfResources = Maps.newHashMap();
@@ -116,17 +116,19 @@ public class PowerWolvesMod {
 		GameRegistry.registerItem(FANGS, "fangs", "powerwolves");
 		GameRegistry.registerItem(TRANSMUTATOR, "transmutator", "powerwolves");
 		GameRegistry.registerItem(WOLF_ARMOR, "wolf_armor", "powerwolves");
-		if (OreDictionary.getOres("nuggetIron").isEmpty()) {
-			IRON_NUGGET = new Item().setUnlocalizedName("ironNugget").setCreativeTab(CreativeTabs.tabMaterials).setTextureName("powerwolves:iron_nugget");
-			GameRegistry.registerItem(IRON_NUGGET, "iron_nugget", "powerwolves");
-			OreDictionary.registerOre("nuggetIron", IRON_NUGGET);
-			GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(IRON_NUGGET, 9), 
-					"I",
-					'I', "ingotIron"
-					));
-		} else {
-			IRON_NUGGET = OreDictionary.getOres("nuggetIron").get(0).getItem();
-		}
+		IRON_NUGGET = new Item().setUnlocalizedName("ironNugget").setCreativeTab(CreativeTabs.tabMaterials).setTextureName("powerwolves:iron_nugget");
+		GameRegistry.registerItem(IRON_NUGGET, "iron_nugget", "powerwolves");
+		OreDictionary.registerOre("nuggetIron", IRON_NUGGET);
+		GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(IRON_NUGGET, 9), 
+				"I",
+				'I', "ingotIron"
+				));
+		GameRegistry.addRecipe(new ShapedOreRecipe(Items.iron_ingot, 
+				",,,",
+				",,,",
+				",,,",
+				',', "nuggetIron"
+				));
 		FMLCommonHandler.instance().bus().register(this);
 		GameRegistry.addRecipe(new ShapedOreRecipe(COLLAR, 
 				"SSS",
@@ -140,13 +142,13 @@ public class PowerWolvesMod {
 				'S', Items.string,
 				'D', "diamond"
 				));
-		GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(FANGS, 1, 1), 
+		GameRegistry.addRecipe(new ShapedOreRecipe(FANGS.setFangType(new ItemStack(FANGS), 1), 
 				"III",
 				"NNN",
 				'I', "ingotIron",
 				'N', "nuggetIron"
 				));
-		GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(FANGS, 1, 2), 
+		GameRegistry.addRecipe(new ShapedOreRecipe(FANGS.setFangType(new ItemStack(FANGS), 2), 
 				" F ",
 				"D D",
 				'F', new ItemStack(FANGS, 1, 0),
